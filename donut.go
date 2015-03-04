@@ -239,8 +239,9 @@ func main() {
 		case <-timeout:
 			return
 		case frame := <-frames:
-			fmt.Print("\x0c", frame, "\n")
-			time.Sleep(40 * time.Millisecond)
+			fmt.Print("\033[H\033[2J")        // Clear screen
+			fmt.Print("\x0c", frame, "\n")    // Print frame
+			time.Sleep(40 * time.Millisecond) // Delay between frames
 		}
 	}
 }
