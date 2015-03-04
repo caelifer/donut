@@ -221,7 +221,7 @@ func donut(aspectA, aspectB float64, frameDelay time.Duration, stream chan<- Fra
 }
 
 func genFrameStream(f func(float64, float64, time.Duration, chan<- Frame)) <-chan Frame {
-	stream := make(chan Frame)
+	stream := make(chan Frame, 1) // Always a room for the next frame
 
 	go func() {
 		f(0, 0, time.Millisecond*40, stream)
