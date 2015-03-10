@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	_ "log"
 	"math"
@@ -103,14 +104,21 @@ func normalizeDegrees(degree float64) float64 {
 
 const radToDegree = 180 / math.Pi
 
-func donut(aspectA, aspectB float64, frameDelay time.Duration, stream chan<- Frame) {
+const FBSZ = 80 * 22
+
+// Preallocate
+var frameBuffer = [2][FBSZ]rune{
+	[FBSZ]rune{},
+	[FBSZ]rune{},
+}
+
+var fbIdx = 0
+
+// Torus matrix with light cooficients
+var z = make([]float64, FBSZ)
+
+func donut(b []rune, aspectA, aspectB float64, stream chan<- Frame) {
 	var A, B float64 = aspectA, aspectB
-
-	// Frame
-	b := make([]rune, 80*22)
-
-	// Torus matrix with light cooficients
-	z := make([]float64, len(b))
 
 	// stats
 	var fps float64  // frames per second
@@ -220,19 +228,28 @@ func donut(aspectA, aspectB float64, frameDelay time.Duration, stream chan<- Fra
 	}
 }
 
-func genFrameStream(f func(float64, float64, time.Duration, chan<- Frame)) <-chan Frame {
+func genFrameStream(f func([]rune, float64, float64, chan<- Frame)) <-chan Frame {
 	stream := make(chan Frame, 1) // Always a room for the next frame
 
 	go func() {
-		f(0, 0, time.Millisecond*40, stream)
+		fbIdx++
+		f(frameBuffer[fbIdx%2][:], 0, 0, stream)
 	}()
 
 	return stream
 }
 
+// Define CLI flags
+var (
+	runTimeDuration = flag.Duration("d", 5*time.Second, "a run duration")
+)
+
 func main() {
+	// Initialize flags
+	flag.Parse()
+
 	frames := genFrameStream(donut)
-	timeout := time.After(5 * time.Second)
+	timeout := time.After(*runTimeDuration)
 
 	for {
 		select {
@@ -241,7 +258,7 @@ func main() {
 		case frame := <-frames:
 			fmt.Print("\033[H\033[2J")        // Clear screen
 			fmt.Print("\x0c", frame, "\n")    // Print frame
-			time.Sleep(40 * time.Millisecond) // Delay between frames
+			time.Sleep(30 * time.Millisecond) // Delay between frames
 		}
 	}
 }
