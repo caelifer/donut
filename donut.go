@@ -114,7 +114,7 @@ var frameBuffer = [2][FBSZ]rune{
 
 var fbIdx = 0
 
-// Torus matrix with light cooficients
+// Torus matrix with light coefficients
 var z = make([]float64, FBSZ)
 
 func donut(b []rune, aspectA, aspectB float64, stream chan<- Frame) {
@@ -128,8 +128,8 @@ func donut(b []rune, aspectA, aspectB float64, stream chan<- Frame) {
 	// Forever
 	for {
 		// Rotational parameters
-		A += 0.07 // Yaw  - rotation
-		B += 0.03 // Roll - rotation
+		A += 0.07 // Yaw angle
+		B += 0.03 // Roll angle
 
 		sA, cA := math.Sincos(A)
 		sB, cB := math.Sincos(B)
