@@ -41,9 +41,9 @@ func frameLine(s string, chr rune) string {
 
 // Frame lines
 const (
-	top  = "┌——————————————————————————————————————————————————————————————┬———————————————┐"
+	top  = "┌──────────────────────────────────────────────────────────────┬───────────────┐"
 	side = '│'
-	bttm = "└——————————————————————————————————————————————————————————————————————————————┘"
+	bttm = "└──────────────────────────────────────────────────────────────────────────────┘"
 )
 
 func MakeFrame(pic []rune) Frame {
@@ -214,7 +214,7 @@ func donut(b []rune, aspectA, aspectB float64, stream chan<- Frame) {
 			rate  = []rune(fmt.Sprintf("│   FPS: %5.1f", fps))
 			roll  = []rune(fmt.Sprintf("│  Roll: %5.1f˚", normalizeDegrees(B*radToDegree)))
 			yaw   = []rune(fmt.Sprintf("│   Yaw: %5.1f˚", normalizeDegrees(A*radToDegree)))
-			bttm  = []rune("└———————————————")
+			bttm  = []rune("└───────────────")
 			offs  = 77 - len(frame)
 		)
 		splice(b, 0, offs, frame)
