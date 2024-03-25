@@ -52,15 +52,15 @@ func MakeFrame(pic []rune) Frame {
 	frameWidth := len([]rune(top))
 
 	// Frame each line
-	for i, _ := range lines {
+	for i := range lines {
 		// Make sure line is frameWidth columns long
 		nl := trimAt(lines[i], frameWidth)
 
 		// Blit with side glyphs
 		nl = frameLine(nl, side)
 
-		// Special case for line 4
-		if i == 4 {
+		// Special case for line 3
+		if i == 3 {
 			t := []rune(nl)
 			t[79] = '┤'
 			nl = string(t)
@@ -87,14 +87,11 @@ func _f(b []rune, ch rune) int {
 	}
 	return i
 }
+
 func splice(b []rune, yidx, offs int, val []rune) {
-	maxx := _f(b, '\n') + 1
-	for i, v := range val {
-		if i+offs > maxx {
-			break
-		}
-		b[yidx*maxx+offs+i] = v
-	}
+	max := _f(b, '\n') + 1
+	boff := yidx*max + offs
+	copy(b[boff:], val)
 }
 
 func normalizeDegrees(degree float64) float64 {
@@ -108,8 +105,8 @@ const FBSZ = 80 * 22
 
 // Preallocate
 var frameBuffer = [2][FBSZ]rune{
-	[FBSZ]rune{},
-	[FBSZ]rune{},
+	{},
+	{},
 }
 
 var fbIdx = 0
@@ -198,7 +195,7 @@ func donut(b []rune, aspectA, aspectB float64, stream chan<- Frame) {
 
 					// Fill the pixel on the canvas (frame)
 					b[o] = []rune(".,-~:;=!*#$@")[n]
-					// b[o] = []rune("∙◦▪●☼◊≠≡☺♦☻◙")[n]
+					// b[o] = []rune("∙◦▪☼◊●≠≡☺◙☻♦")[n]
 				}
 			}
 		}
@@ -206,22 +203,25 @@ func donut(b []rune, aspectA, aspectB float64, stream chan<- Frame) {
 		frameN++
 
 		// Calculate frame per second rate
-		fps = float64(frameN) / time.Since(t0).Seconds()
+		dur := time.Since(t0).Seconds()
+		fps = float64(frameN) / dur
 
 		// display stats
 		var (
-			frame = []rune(fmt.Sprintf("│ Frame: %5d", frameN))
-			rate  = []rune(fmt.Sprintf("│   FPS: %5.1f", fps))
-			roll  = []rune(fmt.Sprintf("│  Roll: %5.1f˚", normalizeDegrees(B*radToDegree)))
-			yaw   = []rune(fmt.Sprintf("│   Yaw: %5.1f˚", normalizeDegrees(A*radToDegree)))
-			bttm  = []rune("└───────────────")
-			offs  = 77 - len(frame)
+			elapsed = []rune(fmt.Sprintf("│  Time: %5.2fs", dur))
+			count   = []rune(fmt.Sprintf("│ Frame: %5d", frameN))
+			rate    = []rune(fmt.Sprintf("│   FPS: %5.1f", fps))
+			// roll  = []rune(fmt.Sprintf("│  Roll: %5.1f˚", normalizeDegrees(B*radToDegree)))
+			// yaw   = []rune(fmt.Sprintf("│   Yaw: %5.1f˚", normalizeDegrees(A*radToDegree)))
+			bttm = []rune("└───────────────")
+			offs = 77 - len(count)
 		)
-		splice(b, 0, offs, frame)
-		splice(b, 1, offs, rate)
-		splice(b, 2, offs, roll)
-		splice(b, 3, offs, yaw)
-		splice(b, 4, offs, bttm)
+		splice(b, 0, offs, elapsed)
+		splice(b, 1, offs, count)
+		splice(b, 2, offs, rate)
+		splice(b, 3, offs, bttm)
+		// splice(b, 2, offs, roll)
+		// splice(b, 3, offs, yaw)
 
 		// Send frame
 		stream <- MakeFrame(b)
@@ -262,3 +262,5 @@ func main() {
 		}
 	}
 }
+
+// vim: :ts=4:sw=4:noexpandtab:ai
